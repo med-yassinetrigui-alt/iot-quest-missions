@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mission, PlacedBlock, IoTBlock } from "@/types/game";
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter } from "@dnd-kit/core";
+import { Mission, IoTBlock } from "@/types/game";
 import { iotBlocks } from "@/data/gameData";
-import HardwareBoard from "@/components/lab/HardwareBoard";
-import CodeBlocks from "@/components/lab/CodeBlocks";
+import ArduinoBoard, { PinConnection } from "@/components/lab/ArduinoBoard";
+import ComponentTray from "@/components/lab/ComponentTray";
+import DragDropCodeEditor from "@/components/lab/DragDropCodeEditor";
 
 interface MissionModalProps {
   mission: Mission;
@@ -13,12 +15,12 @@ interface MissionModalProps {
 
 export default function MissionModal({ mission, onClose, onComplete }: MissionModalProps) {
   const [step, setStep] = useState<"intro" | "lab" | "success">("intro");
-  const [placedBlocks, setPlacedBlocks] = useState<PlacedBlock[]>([]);
-  const [showHint, setShowHint] = useState(false);
-  const [currentHint, setCurrentHint] = useState(0);
+  const [connections, setConnections] = useState<PinConnection[]>([]);
   const [selectedBoard, setSelectedBoard] = useState<"arduino" | "esp32" | "raspberry">("arduino");
   const [labTab, setLabTab] = useState<"build" | "code">("build");
   const [guideMsg, setGuideMsg] = useState("Let's solve this problem together! Start by reading the mission briefing. 📖");
+  const [currentHint, setCurrentHint] = useState(0);
+  const [draggedItem, setDraggedItem] = useState<{ block: IoTBlock; type: string } | null>(null);
 
   const difficultyStyles = {
     easy: { bg: "bg-secondary", label: "Easy", stars: "⭐" },
@@ -26,25 +28,60 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
     hard: { bg: "bg-destructive", label: "Hard", stars: "⭐⭐⭐" },
   }[mission.difficulty];
 
-  const addBlock = (block: IoTBlock, zone: PlacedBlock["zone"]) => {
-    setPlacedBlocks((prev) => [...prev, { block, zone }]);
-    setGuideMsg(`Great choice! ${block.icon} ${block.name} connected to ${selectedBoard === "arduino" ? "Arduino" : selectedBoard === "esp32" ? "ESP32" : "Raspberry Pi"}! 🔧`);
+  const handleDragStart = (event: DragStartEvent) => {
+    const data = event.active.data.current;
+    if (data?.block) {
+      setDraggedItem({ block: data.block, type: data.type });
+    }
   };
 
-  const removeBlock = (index: number) => {
-    setPlacedBlocks((prev) => prev.filter((_, i) => i !== index));
+  const handleDragEnd = (event: DragEndEvent) => {
+    setDraggedItem(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const pinId = over.data.current?.pinId;
+    if (!pinId) return;
+
+    const data = active.data.current;
+    if (!data?.block) return;
+
+    const block = data.block as IoTBlock;
+    const type = data.type as "sensor" | "actuator";
+
+    // Check if pin is already used
+    if (connections.find((c) => c.pinId === pinId)) {
+      setGuideMsg(`⚠️ Pin ${pinId} is already in use! Try another pin.`);
+      return;
+    }
+
+    const newConnection: PinConnection = {
+      pinId,
+      componentId: block.id,
+      componentName: block.name,
+      componentIcon: block.icon,
+      type,
+    };
+
+    setConnections((prev) => [...prev, newConnection]);
+    setGuideMsg(`✅ ${block.icon} ${block.name} connected to pin ${pinId}! ${type === "sensor" ? "Input ready!" : "Output ready!"} 🔌`);
+  };
+
+  const removeConnection = (pinId: string) => {
+    const conn = connections.find((c) => c.pinId === pinId);
+    setConnections((prev) => prev.filter((c) => c.pinId !== pinId));
+    if (conn) setGuideMsg(`Removed ${conn.componentIcon} ${conn.componentName} from pin ${pinId}`);
   };
 
   const handleSubmit = () => {
-    const hasSensor = placedBlocks.some((b) => b.zone === "sensor");
-    const hasController = placedBlocks.some((b) => b.zone === "controller");
-    const hasActuator = placedBlocks.some((b) => b.zone === "actuator");
+    const hasSensor = connections.some((c) => c.type === "sensor");
+    const hasActuator = connections.some((c) => c.type === "actuator");
 
-    if (hasSensor && hasController && hasActuator) {
+    if (hasSensor && hasActuator) {
       setStep("success");
       setGuideMsg("🎉 AMAZING! You solved it! The city is safer thanks to you!");
     } else {
-      setGuideMsg("Hmm, you need at least one sensor, one controller (IF→THEN), and one actuator. Try again! 💪");
+      setGuideMsg("Hmm, you need at least one sensor and one actuator connected to the board. Try again! 💪");
     }
   };
 
@@ -64,7 +101,7 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
         <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm" onClick={onClose} />
 
         <motion.div
-          className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto game-card border-primary"
+          className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto game-card border-primary"
           initial={{ scale: 0.8, y: 50 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.8, y: 50 }}
@@ -77,6 +114,7 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
             ✕
           </button>
 
+          {/* INTRO */}
           {step === "intro" && (
             <div className="space-y-6">
               <div className="flex items-start gap-4">
@@ -90,26 +128,22 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                       {difficultyStyles.label}
                     </span>
                     <span className="text-sm font-bold text-muted-foreground">{difficultyStyles.stars} {mission.xp} XP</span>
-                    <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-full">{mission.category}</span>
                   </div>
                 </div>
               </div>
-
               <div className="bg-muted rounded-2xl p-5">
                 <h3 className="font-display text-lg font-bold text-foreground mb-2">📋 Mission Briefing</h3>
                 <p className="font-body text-foreground/80 leading-relaxed">{mission.description}</p>
               </div>
-
               <div className="flex items-start gap-3 bg-primary/10 rounded-2xl p-4">
                 <span className="text-3xl">🤖</span>
                 <p className="font-body font-semibold text-foreground text-sm">{guideMsg}</p>
               </div>
-
               <button
                 className="game-btn-primary w-full text-xl"
                 onClick={() => {
                   setStep("lab");
-                  setGuideMsg("Pick your board, connect sensors & actuators, then check the code! 🛠️");
+                  setGuideMsg("Drag sensors & actuators onto the Arduino pins, then switch to Code tab to program! 🛠️");
                 }}
               >
                 🚀 Start Lab
@@ -117,6 +151,7 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
             </div>
           )}
 
+          {/* LAB */}
           {step === "lab" && (
             <div className="space-y-4">
               <h2 className="font-display text-xl font-extrabold text-foreground">
@@ -137,7 +172,7 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                     labTab === "build" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
                 >
-                  🔧 Build & Connect
+                  🔧 Build Circuit
                 </button>
                 <button
                   onClick={() => setLabTab("code")}
@@ -145,83 +180,72 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                     labTab === "code" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
                 >
-                  📝 View Code
+                  🧩 Program
                 </button>
               </div>
 
               {labTab === "build" && (
-                <div className="space-y-4">
-                  {/* Hardware Board */}
-                  <HardwareBoard
-                    board={selectedBoard}
-                    connectedBlocks={placedBlocks}
-                    onSelectBoard={setSelectedBoard}
-                  />
+                <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Left: Board */}
+                    <ArduinoBoard
+                      board={selectedBoard}
+                      connections={connections}
+                      onSelectBoard={setSelectedBoard}
+                    />
 
-                  {/* Toolbox */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <ToolboxSection title="📡 Sensors" blocks={iotBlocks.sensors} zone="sensor" onAdd={addBlock} />
-                    <ToolboxSection title="🧠 Controllers" blocks={iotBlocks.controllers} zone="controller" onAdd={addBlock} />
-                    <ToolboxSection title="⚡ Actuators" blocks={iotBlocks.actuators} zone="actuator" onAdd={addBlock} />
+                    {/* Right: Components + connections list */}
+                    <div className="space-y-4">
+                      <ComponentTray sensors={iotBlocks.sensors} actuators={iotBlocks.actuators} />
+
+                      {/* Connected list */}
+                      {connections.length > 0 && (
+                        <div className="bg-muted rounded-xl p-3">
+                          <h4 className="text-xs font-display font-bold text-foreground mb-2">🔗 Wired Connections</h4>
+                          <div className="space-y-1">
+                            {connections.map((c) => (
+                              <div
+                                key={c.pinId}
+                                className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border group cursor-pointer hover:border-destructive transition-colors"
+                                onClick={() => removeConnection(c.pinId)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded font-bold text-muted-foreground">
+                                    {c.pinId}
+                                  </span>
+                                  <span className="text-xs">→</span>
+                                  <span>{c.componentIcon}</span>
+                                  <span className="text-xs font-display font-bold text-foreground">{c.componentName}</span>
+                                </div>
+                                <span className="text-xs text-muted-foreground group-hover:text-destructive">✕</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Connected components */}
-                  <div className="bg-muted rounded-2xl p-4">
-                    <h3 className="font-display text-lg font-bold text-foreground mb-3">🔗 Connected Components</h3>
-                    {placedBlocks.length === 0 ? (
-                      <p className="text-muted-foreground font-body text-center py-6">
-                        Click blocks above to connect them to your {selectedBoard === "arduino" ? "Arduino" : selectedBoard === "esp32" ? "ESP32" : "Raspberry Pi"}!
-                      </p>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {placedBlocks.map((pb, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="flex items-center gap-2 bg-card rounded-xl px-3 py-2 border-2 border-border cursor-pointer hover:border-destructive transition-colors"
-                            onClick={() => removeBlock(i)}
-                          >
-                            <span>{pb.block.icon}</span>
-                            <span className="font-body font-bold text-sm text-foreground">{pb.block.name}</span>
-                            <span className="text-xs text-muted-foreground">✕</span>
-                          </motion.div>
-                        ))}
+                  {/* Drag overlay */}
+                  <DragOverlay>
+                    {draggedItem && (
+                      <div className="bg-card border-2 border-primary rounded-xl px-3 py-2 shadow-2xl flex items-center gap-2 rotate-3">
+                        <span className="text-lg">{draggedItem.block.icon}</span>
+                        <span className="text-xs font-display font-bold text-foreground">{draggedItem.block.name}</span>
                       </div>
                     )}
-                  </div>
-
-                  {/* IF → THEN visual */}
-                  {placedBlocks.some((b) => b.zone === "controller") && (
-                    <div className="bg-game-purple/10 rounded-2xl p-4 border-2 border-game-purple/30">
-                      <h3 className="font-display text-lg font-bold text-foreground mb-2">🔀 Logic Rule</h3>
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <span className="bg-primary text-primary-foreground font-display font-bold px-4 py-2 rounded-xl">IF</span>
-                        {placedBlocks.filter((b) => b.zone === "sensor").map((b, i) => (
-                          <span key={i} className="bg-card border-2 border-border rounded-xl px-3 py-2 font-body font-bold text-sm">
-                            {b.block.icon} {b.block.name} detects
-                          </span>
-                        ))}
-                        <span className="bg-accent text-accent-foreground font-display font-bold px-4 py-2 rounded-xl">THEN</span>
-                        {placedBlocks.filter((b) => b.zone === "actuator").map((b, i) => (
-                          <span key={i} className="bg-card border-2 border-border rounded-xl px-3 py-2 font-body font-bold text-sm">
-                            {b.block.icon} Activate {b.block.name}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </DragOverlay>
+                </DndContext>
               )}
 
               {labTab === "code" && (
-                <div className="space-y-4">
-                  <HardwareBoard
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <ArduinoBoard
                     board={selectedBoard}
-                    connectedBlocks={placedBlocks}
+                    connections={connections}
                     onSelectBoard={setSelectedBoard}
                   />
-                  <CodeBlocks placedBlocks={placedBlocks} board={selectedBoard} />
+                  <DragDropCodeEditor connections={connections} board={selectedBoard} />
                 </div>
               )}
 
@@ -230,7 +254,6 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                 <button
                   className="game-btn-accent text-sm"
                   onClick={() => {
-                    setShowHint(true);
                     setGuideMsg(mission.hints[currentHint] || "You've seen all the hints! You can do it! 💪");
                     setCurrentHint((prev) => Math.min(prev + 1, mission.hints.length - 1));
                   }}
@@ -244,6 +267,7 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
             </div>
           )}
 
+          {/* SUCCESS */}
           {step === "success" && (
             <motion.div className="text-center space-y-6 py-6" initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
               <motion.div className="text-7xl" animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.2, 1] }} transition={{ duration: 0.5 }}>
@@ -265,35 +289,5 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  );
-}
-
-function ToolboxSection({
-  title,
-  blocks,
-  zone,
-  onAdd,
-}: {
-  title: string;
-  blocks: IoTBlock[];
-  zone: PlacedBlock["zone"];
-  onAdd: (block: IoTBlock, zone: PlacedBlock["zone"]) => void;
-}) {
-  return (
-    <div className="bg-card/50 rounded-2xl p-3 border-2 border-border">
-      <h4 className="font-display text-sm font-bold text-foreground mb-2">{title}</h4>
-      <div className="space-y-1">
-        {blocks.map((block) => (
-          <button
-            key={block.id}
-            onClick={() => onAdd(block, zone)}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted transition-colors text-left"
-          >
-            <span className="text-lg">{block.icon}</span>
-            <span className="font-body font-semibold text-xs text-foreground">{block.name}</span>
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }
