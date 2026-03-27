@@ -204,6 +204,7 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                       board={selectedBoard}
                       connections={connections}
                       onSelectBoard={setSelectedBoard}
+                      onRemoveConnection={removeConnection}
                     />
 
                     {/* Right: Components + connections list */}
@@ -256,6 +257,7 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                     board={selectedBoard}
                     connections={connections}
                     onSelectBoard={setSelectedBoard}
+                    onRemoveConnection={removeConnection}
                   />
                   <DragDropCodeEditor connections={connections} board={selectedBoard} />
                 </div>
