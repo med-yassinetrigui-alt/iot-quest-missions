@@ -10,43 +10,19 @@ export interface PinConnection {
 }
 
 interface ArduinoBoardProps {
-  board: "arduino" | "esp32" | "raspberry";
   connections: PinConnection[];
-  onSelectBoard: (board: "arduino" | "esp32" | "raspberry") => void;
   onRemoveConnection?: (pinId: string) => void;
 }
 
-const boards = {
-  arduino: {
-    name: "Arduino Uno R3",
-    boardColor: "#1565C0",
-    chipColor: "#212121",
-    digitalPins: ["D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13"],
-    analogPins: ["A0", "A1", "A2", "A3", "A4", "A5"],
-    powerPins: ["5V", "3.3V", "GND", "GND2", "VIN"],
-    sensorPins: ["A0", "A1", "A2", "A3", "A4", "A5", "D2", "D3"],
-    actuatorPins: ["D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13"],
-  },
-  esp32: {
-    name: "ESP32 DevKit",
-    boardColor: "#1B5E20",
-    chipColor: "#212121",
-    digitalPins: ["GPIO2", "GPIO4", "GPIO5", "GPIO12", "GPIO13", "GPIO14", "GPIO15", "GPIO16", "GPIO17", "GPIO18", "GPIO19", "GPIO21"],
-    analogPins: ["GPIO32", "GPIO33", "GPIO34", "GPIO35", "GPIO36", "GPIO39"],
-    powerPins: ["3.3V", "GND", "5V", "GND2", "EN"],
-    sensorPins: ["GPIO32", "GPIO33", "GPIO34", "GPIO35", "GPIO36", "GPIO39", "GPIO2", "GPIO4"],
-    actuatorPins: ["GPIO5", "GPIO12", "GPIO13", "GPIO14", "GPIO15", "GPIO16", "GPIO17", "GPIO18", "GPIO19", "GPIO21"],
-  },
-  raspberry: {
-    name: "Raspberry Pi 4",
-    boardColor: "#2E7D32",
-    chipColor: "#424242",
-    digitalPins: ["GPIO2", "GPIO3", "GPIO4", "GPIO17", "GPIO27", "GPIO22", "GPIO10", "GPIO9", "GPIO11", "GPIO5", "GPIO6", "GPIO13"],
-    analogPins: ["SDA", "SCL", "MOSI", "MISO", "SCLK", "CE0"],
-    powerPins: ["5V", "5V2", "3.3V", "GND", "GND2"],
-    sensorPins: ["GPIO2", "GPIO3", "GPIO4", "GPIO17", "GPIO27", "GPIO22"],
-    actuatorPins: ["GPIO10", "GPIO9", "GPIO11", "GPIO5", "GPIO6", "GPIO13"],
-  },
+const boardConfig = {
+  name: "Arduino Uno R3",
+  boardColor: "#1565C0",
+  chipColor: "#212121",
+  digitalPins: ["D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13"],
+  analogPins: ["A0", "A1", "A2", "A3", "A4", "A5"],
+  powerPins: ["5V", "3.3V", "GND", "GND2", "VIN"],
+  sensorPins: ["A0", "A1", "A2", "A3", "A4", "A5", "D2", "D3"],
+  actuatorPins: ["D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "D12", "D13"],
 };
 
 function DroppablePin({
@@ -63,17 +39,13 @@ function DroppablePin({
   onRemove?: () => void;
 }) {
   const { isOver, setNodeRef } = useDroppable({ id: `pin-${pinId}`, data: { pinId, pinType } });
-
-  const isAnalog = pinId.startsWith("A") || pinId.startsWith("SDA") || pinId.startsWith("SCL") || pinId.startsWith("MO") || pinId.startsWith("MI") || pinId.startsWith("SC") || pinId.startsWith("CE");
+  const isAnalog = pinId.startsWith("A");
 
   return (
     <div
       ref={setNodeRef}
-      className={`flex items-center gap-1 ${side === "right" ? "flex-row-reverse" : ""} ${
-        side === "bottom" ? "flex-col" : ""
-      }`}
+      className={`flex items-center gap-1 ${side === "right" ? "flex-row-reverse" : ""} ${side === "bottom" ? "flex-col" : ""}`}
     >
-      {/* Wire connection line */}
       {connection && side !== "bottom" && (
         <motion.div
           initial={{ scaleX: 0 }}
@@ -96,11 +68,7 @@ function DroppablePin({
       )}
 
       {connection && side === "bottom" && (
-        <motion.div
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: 1 }}
-          className="flex flex-col items-center gap-0.5"
-        >
+        <motion.div initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} className="flex flex-col items-center gap-0.5">
           <div
             className="w-0.5 h-4"
             style={{ backgroundColor: connection.type === "sensor" ? "hsl(var(--secondary))" : "hsl(var(--accent))" }}
@@ -115,12 +83,7 @@ function DroppablePin({
         </motion.div>
       )}
 
-      {/* Pin */}
-      <div
-        className={`relative flex items-center justify-center transition-all duration-200 ${
-          isOver ? "scale-150" : ""
-        }`}
-      >
+      <div className={`relative flex items-center justify-center transition-all duration-200 ${isOver ? "scale-150" : ""}`}>
         <div
           className={`w-3 h-3 rounded-sm border ${
             connection
@@ -148,57 +111,36 @@ function DroppablePin({
   );
 }
 
-export default function ArduinoBoard({ board, connections, onSelectBoard, onRemoveConnection }: ArduinoBoardProps) {
-  const info = boards[board];
-  const leftPins = info.digitalPins.slice(0, 6);
-  const rightPins = info.digitalPins.slice(6);
-  const bottomPins = info.analogPins;
+export default function ArduinoBoard({ connections, onRemoveConnection }: ArduinoBoardProps) {
+  const leftPins = boardConfig.digitalPins.slice(0, 6);
+  const rightPins = boardConfig.digitalPins.slice(6);
+  const bottomPins = boardConfig.analogPins;
 
   const getConnection = (pinId: string) => connections.find((c) => c.pinId === pinId);
 
   const getPinType = (pinId: string): "sensor" | "actuator" | "both" => {
-    if (info.sensorPins.includes(pinId) && info.actuatorPins.includes(pinId)) return "both";
-    if (info.sensorPins.includes(pinId)) return "sensor";
+    if (boardConfig.sensorPins.includes(pinId) && boardConfig.actuatorPins.includes(pinId)) return "both";
+    if (boardConfig.sensorPins.includes(pinId)) return "sensor";
     return "actuator";
   };
 
   return (
     <div className="space-y-3">
-      {/* Board selector */}
-      <div className="flex gap-1 bg-muted p-1 rounded-xl">
-        {(Object.keys(boards) as Array<"arduino" | "esp32" | "raspberry">).map((key) => (
-          <button
-            key={key}
-            onClick={() => onSelectBoard(key)}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-display font-bold text-xs transition-all ${
-              board === key
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: boards[key].boardColor }}
-            />
-            {boards[key].name}
-          </button>
-        ))}
+      {/* Board title */}
+      <div className="flex items-center gap-2 bg-muted p-2 rounded-xl">
+        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: boardConfig.boardColor }} />
+        <span className="font-display font-bold text-sm text-foreground">{boardConfig.name}</span>
+        <span className="text-xs text-muted-foreground ml-auto font-mono">ATmega328P</span>
       </div>
 
       {/* Board visualization */}
-      <motion.div
-        key={board}
-        initial={{ rotateY: 90, opacity: 0 }}
-        animate={{ rotateY: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 200 }}
-        className="relative"
-      >
+      <div className="relative">
         <div
           className="relative rounded-xl p-1 shadow-2xl mx-auto"
           style={{
-            backgroundColor: info.boardColor,
+            backgroundColor: boardConfig.boardColor,
             maxWidth: 420,
-            background: `linear-gradient(135deg, ${info.boardColor}, ${info.boardColor}dd)`,
+            background: `linear-gradient(135deg, ${boardConfig.boardColor}, ${boardConfig.boardColor}dd)`,
           }}
         >
           {/* Screw holes */}
@@ -215,47 +157,32 @@ export default function ArduinoBoard({ board, connections, onSelectBoard, onRemo
           </div>
 
           <div className="relative flex">
-            {/* Left pins (digital low) */}
+            {/* Left pins */}
             <div className="flex flex-col justify-around py-6 gap-1 z-10 -ml-1">
               {leftPins.map((pin) => (
-                <DroppablePin
-                  key={pin}
-                  pinId={pin}
-                  connection={getConnection(pin)}
-                  side="left"
-                  pinType={getPinType(pin)}
-                  onRemove={() => onRemoveConnection?.(pin)}
-                />
+                <DroppablePin key={pin} pinId={pin} connection={getConnection(pin)} side="left" pinType={getPinType(pin)} onRemove={() => onRemoveConnection?.(pin)} />
               ))}
             </div>
 
             {/* Board center */}
             <div className="flex-1 p-4 flex flex-col items-center justify-center min-h-[220px]">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 bg-zinc-600 rounded-b-sm border-x border-b border-zinc-500" />
-
               <div
                 className="w-20 h-20 rounded-lg flex items-center justify-center shadow-inner border border-zinc-600 relative"
-                style={{ backgroundColor: info.chipColor }}
+                style={{ backgroundColor: boardConfig.chipColor }}
               >
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-1 rounded-b bg-zinc-500" />
                 <div className="absolute left-0 top-2 bottom-2 flex flex-col justify-around">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="w-1 h-1 bg-zinc-500 -ml-0.5" />
-                  ))}
+                  {[...Array(6)].map((_, i) => <div key={i} className="w-1 h-1 bg-zinc-500 -ml-0.5" />)}
                 </div>
                 <div className="absolute right-0 top-2 bottom-2 flex flex-col justify-around">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="w-1 h-1 bg-zinc-500 -mr-0.5" />
-                  ))}
+                  {[...Array(6)].map((_, i) => <div key={i} className="w-1 h-1 bg-zinc-500 -mr-0.5" />)}
                 </div>
                 <span className="text-zinc-400 text-[8px] font-mono font-bold text-center leading-tight">
-                  {board === "arduino" ? "ATmega\n328P" : board === "esp32" ? "ESP32\nWROOM" : "BCM\n2711"}
+                  ATmega{"\n"}328P
                 </span>
               </div>
-
-              <div className="mt-3 text-zinc-300 text-[10px] font-mono font-bold tracking-widest">
-                {info.name.toUpperCase()}
-              </div>
+              <div className="mt-3 text-zinc-300 text-[10px] font-mono font-bold tracking-widest">ARDUINO UNO R3</div>
 
               {/* Status LEDs */}
               <div className="flex gap-2 mt-2">
@@ -285,38 +212,24 @@ export default function ArduinoBoard({ board, connections, onSelectBoard, onRemo
               <div className="absolute top-12 right-12 w-3 h-3 rounded-full bg-zinc-600 border border-zinc-500" />
             </div>
 
-            {/* Right pins (digital high) */}
+            {/* Right pins */}
             <div className="flex flex-col justify-around py-6 gap-1 z-10 -mr-1">
               {rightPins.map((pin) => (
-                <DroppablePin
-                  key={pin}
-                  pinId={pin}
-                  connection={getConnection(pin)}
-                  side="right"
-                  pinType={getPinType(pin)}
-                  onRemove={() => onRemoveConnection?.(pin)}
-                />
+                <DroppablePin key={pin} pinId={pin} connection={getConnection(pin)} side="right" pinType={getPinType(pin)} onRemove={() => onRemoveConnection?.(pin)} />
               ))}
             </div>
           </div>
 
-          {/* Bottom pins (analog — best for sensors) */}
+          {/* Bottom pins (analog) */}
           <div className="flex justify-center gap-3 pb-2 pt-1">
             {bottomPins.map((pin) => (
-              <DroppablePin
-                key={pin}
-                pinId={pin}
-                connection={getConnection(pin)}
-                side="bottom"
-                pinType={getPinType(pin)}
-                onRemove={() => onRemoveConnection?.(pin)}
-              />
+              <DroppablePin key={pin} pinId={pin} connection={getConnection(pin)} side="bottom" pinType={getPinType(pin)} onRemove={() => onRemoveConnection?.(pin)} />
             ))}
           </div>
 
           {/* Power pins */}
           <div className="flex justify-center gap-2 pb-3">
-            {info.powerPins.map((pin) => (
+            {boardConfig.powerPins.map((pin) => (
               <div key={pin} className="flex flex-col items-center gap-0.5">
                 <div className={`w-3 h-3 rounded-sm ${pin.includes("GND") ? "bg-zinc-800 border-zinc-700" : pin.includes("5V") ? "bg-red-600 border-red-500" : "bg-orange-500 border-orange-400"} border`} />
                 <span className="text-[6px] font-mono font-bold text-zinc-400">{pin}</span>
@@ -341,7 +254,7 @@ export default function ArduinoBoard({ board, connections, onSelectBoard, onRemo
         <p className="text-center text-xs font-body text-muted-foreground mt-1 font-semibold">
           ⬆️ Drag components onto pins to connect them
         </p>
-      </motion.div>
+      </div>
     </div>
   );
 }
