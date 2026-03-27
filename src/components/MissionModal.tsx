@@ -55,6 +55,18 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
       return;
     }
 
+    // Validate pin type compatibility
+    const pinData = over.data.current;
+    const pinType = pinData?.pinType as string | undefined;
+    if (pinType && pinType !== "both" && pinType !== type) {
+      const isAnalog = pinId.startsWith("A") || pinId.startsWith("GPIO3");
+      if (type === "sensor" && !isAnalog) {
+        setGuideMsg(`💡 Tip: Sensors work best on analog pins (A0-A5). Try the bottom pins!`);
+      } else if (type === "actuator" && isAnalog) {
+        setGuideMsg(`💡 Tip: Actuators need digital pins (D4-D13). Try the side pins!`);
+      }
+    }
+
     const newConnection: PinConnection = {
       pinId,
       componentId: block.id,
