@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { missions } from "@/data/gameData";
 import { Mission } from "@/types/game";
@@ -15,6 +15,7 @@ const Index = () => {
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [showBadges, setShowBadges] = useState(false);
   const [guideMsg, setGuideMsg] = useState<string | undefined>();
+  const mapRef = useRef<HTMLDivElement>(null);
 
   const handleMissionClick = (mission: Mission) => {
     if (!mission.unlocked) {
@@ -36,12 +37,11 @@ const Index = () => {
     setGuideMsg("🎉 Awesome work! Look for the next mission on the map!");
   };
 
-  // Unlock missions based on completion count
   const getUnlockedMissions = () => {
     const completed = gameState.completedMissions.length;
     return missions.map((m) => ({
       ...m,
-      unlocked: m.difficulty === "easy" || (m.difficulty === "medium" && completed >= 1) || (m.difficulty === "hard" && completed >= 3),
+      unlocked: m.difficulty === "easy" || (m.difficulty === "medium" && completed >= 2) || (m.difficulty === "hard" && completed >= 4),
     }));
   };
 
@@ -49,36 +49,37 @@ const Index = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      {/* City Map Background */}
+      {/* Scrollable City Map */}
       <motion.div
-        className="absolute inset-0"
-        initial={{ scale: 1.1 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
+        ref={mapRef}
+        className="absolute inset-0 overflow-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
       >
-        <img
-          src={cityMapBg}
-          alt="Smart City Map"
-          className="w-full h-full object-cover"
-        />
-        {/* Overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-foreground/10 via-transparent to-foreground/20" />
+        <div className="relative" style={{ width: "180vw", height: "180vh", minWidth: "2400px", minHeight: "1600px" }}>
+          <img
+            src={cityMapBg}
+            alt="Smart City Map"
+            className="w-full h-full object-cover"
+          />
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-foreground/5 via-transparent to-foreground/10" />
+
+          {/* Mission Markers */}
+          {activeMissions.map((mission) => (
+            <MissionMarker
+              key={mission.id}
+              mission={mission}
+              isCompleted={gameState.completedMissions.includes(mission.id)}
+              onClick={() => handleMissionClick(mission)}
+            />
+          ))}
+        </div>
       </motion.div>
 
-      {/* Top Bar */}
+      {/* Top Bar - fixed */}
       <TopBar gameState={gameState} onBadgesClick={() => setShowBadges(true)} />
-
-      {/* Mission Markers */}
-      <div className="absolute inset-0">
-        {activeMissions.map((mission) => (
-          <MissionMarker
-            key={mission.id}
-            mission={mission}
-            isCompleted={gameState.completedMissions.includes(mission.id)}
-            onClick={() => handleMissionClick(mission)}
-          />
-        ))}
-      </div>
 
       {/* AI Guide */}
       <AIGuide message={guideMsg} />
