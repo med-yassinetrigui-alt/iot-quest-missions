@@ -235,12 +235,17 @@ export const iotBlocks = {
   sensors: [
     { id: "light", name: "Light Sensor", icon: "☀️", color: "game-yellow" },
     { id: "motion", name: "Motion Sensor", icon: "👁️", color: "game-purple" },
-    { id: "temp", name: "Temperature", icon: "🌡️", color: "destructive" },
-    { id: "water", name: "Water Level", icon: "💧", color: "primary" },
-    { id: "air", name: "Air Quality", icon: "💨", color: "game-teal" },
-    { id: "camera", name: "Camera", icon: "📷", color: "muted" },
+    { id: "temp", name: "Temperature Sensor", icon: "🌡️", color: "destructive" },
+    { id: "water", name: "Water Level Sensor", icon: "💧", color: "primary" },
+    { id: "air", name: "Air Quality Sensor", icon: "💨", color: "game-teal" },
+    { id: "camera", name: "Camera Sensor", icon: "📷", color: "muted" },
     { id: "counter", name: "Car Counter", icon: "🚗", color: "game-orange" },
     { id: "energy", name: "Energy Meter", icon: "⚡", color: "game-yellow" },
+    { id: "sound", name: "Sound Sensor", icon: "🎙️", color: "game-pink" },
+    { id: "occupancy", name: "Occupancy Sensor", icon: "🧑‍🤝‍🧑", color: "accent" },
+    { id: "wind", name: "Wind Sensor", icon: "🌬️", color: "game-teal" },
+    { id: "datalogger", name: "Data Logger", icon: "💾", color: "secondary" },
+    { id: "network", name: "Network Monitor", icon: "📡", color: "primary" },
   ],
   controllers: [
     { id: "if-then", name: "IF → THEN", icon: "🔀", color: "game-purple" },
@@ -255,6 +260,12 @@ export const iotBlocks = {
     { id: "display", name: "Display", icon: "📺", color: "primary" },
     { id: "sms", name: "SMS Alert", icon: "📱", color: "secondary" },
     { id: "traffic", name: "Traffic Light", icon: "🚦", color: "game-teal" },
+    { id: "hvac", name: "HVAC Controller", icon: "❄️", color: "primary" },
+    { id: "smartplug", name: "Smart Plug", icon: "🔌", color: "game-orange" },
+    { id: "warndisplay", name: "Warning Display", icon: "⚠️", color: "destructive" },
+    { id: "ventfan", name: "Ventilation Fan", icon: "🌀", color: "game-teal" },
+    { id: "blockchain", name: "Blockchain Node", icon: "⛓️", color: "game-purple" },
+    { id: "alertsys", name: "Alert System", icon: "🚨", color: "destructive" },
   ],
 };
 
@@ -265,4 +276,6 @@ export const badges = [
   { id: "city-hero", name: "City Hero", icon: "🦸", description: "Complete all easy missions", earned: false },
   { id: "ai-pioneer", name: "AI Pioneer", icon: "🤖", description: "Complete an AI challenge", earned: false },
   { id: "blockchain-guru", name: "Blockchain Guru", icon: "⛓️", description: "Complete blockchain mission", earned: false },
+  { id: "safety-expert", name: "Safety Expert", icon: "🛡️", description: "Complete all safety missions", earned: false },
+  { id: "green-thumb", name: "Green Thumb", icon: "🌿", description: "Complete the garden mission", earned: false },
 ];
