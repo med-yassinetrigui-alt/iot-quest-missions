@@ -52,12 +52,12 @@ const Index = () => {
       {/* Scrollable City Map */}
       <motion.div
         ref={mapRef}
-        className="absolute inset-0 overflow-auto"
+        className="absolute inset-0"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <div className="relative" style={{ width: "180vw", height: "180vh", minWidth: "2400px", minHeight: "1600px" }}>
+        <div className="relative w-full h-full">
           <img
             src={cityMapBg}
             alt="Smart City Map"
