@@ -8,7 +8,7 @@ export const missions: Mission[] = [
     difficulty: "easy",
     category: "Energy",
     xp: 100,
-    location: { x: 15, y: 18 },
+    location: { x: 18, y: 15 },
     icon: "💡",
     unlocked: true,
     completed: false,
