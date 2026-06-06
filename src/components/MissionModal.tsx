@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter } from "@dnd-kit/core";
 import { Mission, IoTBlock } from "@/types/game";
 import { iotBlocks } from "@/data/gameData";
+import { missionGuides } from "@/data/missionGuides";
 import ArduinoBoard, { PinConnection } from "@/components/lab/ArduinoBoard";
 import ComponentTray from "@/components/lab/ComponentTray";
 import DragDropCodeEditor from "@/components/lab/DragDropCodeEditor";
