@@ -7,6 +7,7 @@ import { missionGuides } from "@/data/missionGuides";
 import ArduinoBoard, { PinConnection } from "@/components/lab/ArduinoBoard";
 import ComponentTray from "@/components/lab/ComponentTray";
 import DragDropCodeEditor from "@/components/lab/DragDropCodeEditor";
+import StreetLightScene from "@/components/lab/StreetLightScene";
 
 interface MissionModalProps {
   mission: Mission;
@@ -23,7 +24,17 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
   const [draggedItem, setDraggedItem] = useState<{ block: IoTBlock; type: string } | null>(null);
   const [codeValid, setCodeValid] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [simDark, setSimDark] = useState(true);
   const guide = missionGuides[mission.id];
+  const isLightingMission = mission.id === "smart-lights";
+
+  const allRequiredWired =
+    mission.requiredSensors.every((s) =>
+      connections.some((c) => c.componentName === s && c.type === "sensor")
+    ) &&
+    mission.requiredActuators.every((a) =>
+      connections.some((c) => c.componentName === a && c.type === "actuator")
+    );
 
   const difficultyStyles = {
     easy: { bg: "bg-secondary", label: "Easy", stars: "⭐" },
@@ -161,6 +172,10 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                 </div>
               </div>
 
+              {isLightingMission && (
+                <StreetLightScene variant="intro" />
+              )}
+
               <div className="bg-muted rounded-2xl p-5">
                 <h3 className="font-display text-lg font-bold text-foreground mb-2">📋 Mission Briefing</h3>
                 <p className="font-body text-foreground/80 leading-relaxed">{mission.description}</p>
@@ -222,6 +237,40 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
           {step === "lab" && (
             <div className="space-y-4">
               <h2 className="font-display text-xl font-extrabold text-foreground">{mission.icon} {mission.title} — Lab</h2>
+
+              {isLightingMission && (
+                <div className="space-y-2">
+                  <StreetLightScene
+                    variant="lab"
+                    isDark={simDark}
+                    isWired={allRequiredWired}
+                    codeValid={codeValid}
+                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-display font-bold text-muted-foreground">Test scene:</span>
+                    <button
+                      onClick={() => setSimDark(true)}
+                      className={`text-xs font-display font-bold px-3 py-1 rounded-lg transition-colors ${
+                        simDark ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      🌙 Night
+                    </button>
+                    <button
+                      onClick={() => setSimDark(false)}
+                      className={`text-xs font-display font-bold px-3 py-1 rounded-lg transition-colors ${
+                        !simDark ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      ☀️ Day
+                    </button>
+                    <span className="text-[10px] font-body text-muted-foreground ml-auto">
+                      Lamp turns ON only when wired ✅ + code valid ✅ + dark 🌙
+                    </span>
+                  </div>
+                </div>
+              )}
+
 
               {/* Guide */}
               <div className="flex items-start gap-3 bg-primary/10 rounded-2xl p-3">
