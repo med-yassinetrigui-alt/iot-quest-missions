@@ -238,6 +238,40 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
             <div className="space-y-4">
               <h2 className="font-display text-xl font-extrabold text-foreground">{mission.icon} {mission.title} — Lab</h2>
 
+              {isLightingMission && (
+                <div className="space-y-2">
+                  <StreetLightScene
+                    variant="lab"
+                    isDark={simDark}
+                    isWired={allRequiredWired}
+                    codeValid={codeValid}
+                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-display font-bold text-muted-foreground">Test scene:</span>
+                    <button
+                      onClick={() => setSimDark(true)}
+                      className={`text-xs font-display font-bold px-3 py-1 rounded-lg transition-colors ${
+                        simDark ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      🌙 Night
+                    </button>
+                    <button
+                      onClick={() => setSimDark(false)}
+                      className={`text-xs font-display font-bold px-3 py-1 rounded-lg transition-colors ${
+                        !simDark ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      ☀️ Day
+                    </button>
+                    <span className="text-[10px] font-body text-muted-foreground ml-auto">
+                      Lamp turns ON only when wired ✅ + code valid ✅ + dark 🌙
+                    </span>
+                  </div>
+                </div>
+              )}
+
+
               {/* Guide */}
               <div className="flex items-start gap-3 bg-primary/10 rounded-2xl p-3">
                 <span className="text-2xl">🤖</span>
