@@ -179,6 +179,29 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                 </div>
               </div>
 
+              {/* Tutor guide — what to do & WHY */}
+              {guide && (
+                <div className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 rounded-2xl p-5 space-y-3">
+                  <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+                    🎓 Mission Tutor — How & Why
+                  </h3>
+                  <div className="space-y-2 text-sm font-body text-foreground/90">
+                    <div className="bg-card/60 rounded-xl p-3">
+                      <p className="font-display font-bold text-primary mb-1">🔌 Wiring (how to connect)</p>
+                      <p className="leading-relaxed">{guide.wiring}</p>
+                    </div>
+                    <div className="bg-card/60 rounded-xl p-3">
+                      <p className="font-display font-bold text-accent mb-1">🧠 Code logic (what to program)</p>
+                      <p className="leading-relaxed">{guide.code}</p>
+                    </div>
+                    <div className="bg-card/60 rounded-xl p-3">
+                      <p className="font-display font-bold text-secondary mb-1">💡 Why we do it this way</p>
+                      <p className="leading-relaxed">{guide.why}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-start gap-3 bg-primary/10 rounded-2xl p-4">
                 <span className="text-3xl">🤖</span>
                 <p className="font-body font-semibold text-foreground text-sm">{guideMsg}</p>
