@@ -8,7 +8,9 @@ interface MissionMarkerProps {
 }
 
 export default function MissionMarker({ mission, onClick, isCompleted }: MissionMarkerProps) {
-  const difficultyColor = {
+  // All unsolved missions show as red alerts; completed turn green
+  const difficultyColor = "bg-destructive";
+  const difficultyBadge = {
     easy: "bg-secondary",
     medium: "bg-accent",
     hard: "bg-destructive",
@@ -25,9 +27,12 @@ export default function MissionMarker({ mission, onClick, isCompleted }: Mission
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: "spring", stiffness: 300, delay: Math.random() * 0.5 }}
     >
-      {/* Alert pulse ring */}
+      {/* Alert pulse ring - red for unsolved problems */}
       {!isCompleted && mission.unlocked && (
-        <span className="absolute inset-0 rounded-full alert-pulse bg-accent/30 -m-2" />
+        <>
+          <span className="absolute inset-0 rounded-full alert-pulse bg-destructive/40 -m-2" />
+          <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground text-xs font-extrabold flex items-center justify-center border-2 border-card shadow-md z-10 animate-pulse">!</span>
+        </>
       )}
 
       {/* Marker */}

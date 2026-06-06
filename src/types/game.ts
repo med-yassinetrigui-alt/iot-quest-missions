@@ -12,6 +12,11 @@ export interface Mission {
   hints: string[];
   requiredSensors: string[];
   requiredActuators: string[];
+  guide?: {
+    wiring: string;
+    code: string;
+    why: string;
+  };
 }
 
 export interface IoTBlock {
