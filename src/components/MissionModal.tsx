@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter } from "@dnd-kit/core";
 import { Mission, IoTBlock } from "@/types/game";
 import { iotBlocks } from "@/data/gameData";
+import { missionGuides } from "@/data/missionGuides";
 import ArduinoBoard, { PinConnection } from "@/components/lab/ArduinoBoard";
 import ComponentTray from "@/components/lab/ComponentTray";
 import DragDropCodeEditor from "@/components/lab/DragDropCodeEditor";
@@ -21,6 +22,8 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
   const [currentHint, setCurrentHint] = useState(0);
   const [draggedItem, setDraggedItem] = useState<{ block: IoTBlock; type: string } | null>(null);
   const [codeValid, setCodeValid] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const guide = missionGuides[mission.id];
 
   const difficultyStyles = {
     easy: { bg: "bg-secondary", label: "Easy", stars: "⭐" },
@@ -176,6 +179,29 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                 </div>
               </div>
 
+              {/* Tutor guide — what to do & WHY */}
+              {guide && (
+                <div className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 rounded-2xl p-5 space-y-3">
+                  <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+                    🎓 Mission Tutor — How & Why
+                  </h3>
+                  <div className="space-y-2 text-sm font-body text-foreground/90">
+                    <div className="bg-card/60 rounded-xl p-3">
+                      <p className="font-display font-bold text-primary mb-1">🔌 Wiring (how to connect)</p>
+                      <p className="leading-relaxed">{guide.wiring}</p>
+                    </div>
+                    <div className="bg-card/60 rounded-xl p-3">
+                      <p className="font-display font-bold text-accent mb-1">🧠 Code logic (what to program)</p>
+                      <p className="leading-relaxed">{guide.code}</p>
+                    </div>
+                    <div className="bg-card/60 rounded-xl p-3">
+                      <p className="font-display font-bold text-secondary mb-1">💡 Why we do it this way</p>
+                      <p className="leading-relaxed">{guide.why}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-start gap-3 bg-primary/10 rounded-2xl p-4">
                 <span className="text-3xl">🤖</span>
                 <p className="font-body font-semibold text-foreground text-sm">{guideMsg}</p>
@@ -200,8 +226,33 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
               {/* Guide */}
               <div className="flex items-start gap-3 bg-primary/10 rounded-2xl p-3">
                 <span className="text-2xl">🤖</span>
-                <p className="font-body font-semibold text-foreground text-sm whitespace-pre-line">{guideMsg}</p>
+                <p className="font-body font-semibold text-foreground text-sm whitespace-pre-line flex-1">{guideMsg}</p>
+                {guide && (
+                  <button
+                    onClick={() => setShowGuide((v) => !v)}
+                    className="text-xs font-display font-bold bg-primary text-primary-foreground rounded-lg px-3 py-1 hover:opacity-90 whitespace-nowrap"
+                  >
+                    {showGuide ? "Hide" : "🎓 Tutor"}
+                  </button>
+                )}
               </div>
+
+              {showGuide && guide && (
+                <div className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 rounded-2xl p-4 space-y-2 text-sm font-body">
+                  <div className="bg-card/60 rounded-xl p-3">
+                    <p className="font-display font-bold text-primary mb-1">🔌 Wiring</p>
+                    <p className="leading-relaxed text-foreground/90">{guide.wiring}</p>
+                  </div>
+                  <div className="bg-card/60 rounded-xl p-3">
+                    <p className="font-display font-bold text-accent mb-1">🧠 Code</p>
+                    <p className="leading-relaxed text-foreground/90">{guide.code}</p>
+                  </div>
+                  <div className="bg-card/60 rounded-xl p-3">
+                    <p className="font-display font-bold text-secondary mb-1">💡 Why</p>
+                    <p className="leading-relaxed text-foreground/90">{guide.why}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Circuit validation checklist */}
               <div className="bg-muted rounded-xl p-3">
