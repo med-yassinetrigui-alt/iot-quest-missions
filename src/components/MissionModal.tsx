@@ -7,6 +7,7 @@ import { missionGuides } from "@/data/missionGuides";
 import ArduinoBoard, { PinConnection } from "@/components/lab/ArduinoBoard";
 import ComponentTray from "@/components/lab/ComponentTray";
 import DragDropCodeEditor from "@/components/lab/DragDropCodeEditor";
+import StreetLightScene from "@/components/lab/StreetLightScene";
 
 interface MissionModalProps {
   mission: Mission;
