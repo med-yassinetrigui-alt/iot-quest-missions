@@ -172,6 +172,10 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                 </div>
               </div>
 
+              {isLightingMission && (
+                <StreetLightScene variant="intro" />
+              )}
+
               <div className="bg-muted rounded-2xl p-5">
                 <h3 className="font-display text-lg font-bold text-foreground mb-2">📋 Mission Briefing</h3>
                 <p className="font-body text-foreground/80 leading-relaxed">{mission.description}</p>
