@@ -24,7 +24,17 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
   const [draggedItem, setDraggedItem] = useState<{ block: IoTBlock; type: string } | null>(null);
   const [codeValid, setCodeValid] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [simDark, setSimDark] = useState(true);
   const guide = missionGuides[mission.id];
+  const isLightingMission = mission.id === "smart-lights";
+
+  const allRequiredWired =
+    mission.requiredSensors.every((s) =>
+      connections.some((c) => c.componentName === s && c.type === "sensor")
+    ) &&
+    mission.requiredActuators.every((a) =>
+      connections.some((c) => c.componentName === a && c.type === "actuator")
+    );
 
   const difficultyStyles = {
     easy: { bg: "bg-secondary", label: "Easy", stars: "⭐" },
