@@ -52,7 +52,7 @@ export default function MissionMarker({ mission, onClick, isCompleted }: Mission
       <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
         <div className="game-card p-2 px-3 text-xs whitespace-nowrap font-display font-bold text-card-foreground">
           {mission.title}
-          <span className={`ml-2 inline-block px-2 py-0.5 rounded-full text-[10px] text-primary-foreground ${difficultyColor}`}>
+          <span className={`ml-2 inline-block px-2 py-0.5 rounded-full text-[10px] text-primary-foreground ${difficultyBadge}`}>
             {mission.difficulty}
           </span>
         </div>
