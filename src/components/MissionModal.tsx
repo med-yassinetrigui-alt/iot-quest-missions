@@ -22,6 +22,8 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
   const [currentHint, setCurrentHint] = useState(0);
   const [draggedItem, setDraggedItem] = useState<{ block: IoTBlock; type: string } | null>(null);
   const [codeValid, setCodeValid] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const guide = missionGuides[mission.id];
 
   const difficultyStyles = {
     easy: { bg: "bg-secondary", label: "Easy", stars: "⭐" },
