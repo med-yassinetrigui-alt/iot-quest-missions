@@ -226,8 +226,33 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
               {/* Guide */}
               <div className="flex items-start gap-3 bg-primary/10 rounded-2xl p-3">
                 <span className="text-2xl">🤖</span>
-                <p className="font-body font-semibold text-foreground text-sm whitespace-pre-line">{guideMsg}</p>
+                <p className="font-body font-semibold text-foreground text-sm whitespace-pre-line flex-1">{guideMsg}</p>
+                {guide && (
+                  <button
+                    onClick={() => setShowGuide((v) => !v)}
+                    className="text-xs font-display font-bold bg-primary text-primary-foreground rounded-lg px-3 py-1 hover:opacity-90 whitespace-nowrap"
+                  >
+                    {showGuide ? "Hide" : "🎓 Tutor"}
+                  </button>
+                )}
               </div>
+
+              {showGuide && guide && (
+                <div className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 rounded-2xl p-4 space-y-2 text-sm font-body">
+                  <div className="bg-card/60 rounded-xl p-3">
+                    <p className="font-display font-bold text-primary mb-1">🔌 Wiring</p>
+                    <p className="leading-relaxed text-foreground/90">{guide.wiring}</p>
+                  </div>
+                  <div className="bg-card/60 rounded-xl p-3">
+                    <p className="font-display font-bold text-accent mb-1">🧠 Code</p>
+                    <p className="leading-relaxed text-foreground/90">{guide.code}</p>
+                  </div>
+                  <div className="bg-card/60 rounded-xl p-3">
+                    <p className="font-display font-bold text-secondary mb-1">💡 Why</p>
+                    <p className="leading-relaxed text-foreground/90">{guide.why}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Circuit validation checklist */}
               <div className="bg-muted rounded-xl p-3">
