@@ -254,7 +254,7 @@ export const iotBlocks = {
     { id: "ai-predict", name: "AI Predict", icon: "🤖", color: "game-pink" },
   ],
   actuators: [
-    { id: "led", name: "LED Light", icon: "💡", color: "game-yellow" },
+    { id: "led", name: "Street Light", icon: "💡", color: "game-yellow" },
     { id: "alarm", name: "Alarm", icon: "🔔", color: "destructive" },
     { id: "motor", name: "Motor", icon: "⚙️", color: "muted" },
     { id: "display", name: "Display", icon: "📺", color: "primary" },
