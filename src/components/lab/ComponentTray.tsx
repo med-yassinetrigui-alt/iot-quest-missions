@@ -97,14 +97,12 @@ function DraggableComponent({ block, type }: { block: IoTBlock; type: "sensor" |
     led: {
       visual: (
         <div className="relative flex flex-col items-center">
-          <div className="w-5 h-5 rounded-full bg-red-500 border-2 border-red-600 shadow-[0_0_10px_#ef4444]" />
-          <div className="flex gap-1 mt-0.5">
-            <div className="w-0.5 h-3 bg-zinc-400" />
-            <div className="w-0.5 h-2 bg-zinc-400" />
-          </div>
+          <div className="w-5 h-5 rounded-full bg-amber-100 border-2 border-amber-300 shadow-[0_0_12px_#fde68a]" />
+          <div className="w-3 h-1 bg-zinc-500 rounded-sm -mt-0.5" />
+          <div className="w-0.5 h-3 bg-zinc-500" />
         </div>
       ),
-      color: "border-red-400",
+      color: "border-amber-300",
     },
     alarm: {
       visual: (
