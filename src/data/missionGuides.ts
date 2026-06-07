@@ -10,9 +10,9 @@ export type MissionGuide = {
 export const missionGuides: Record<string, MissionGuide> = {
   "smart-lights": {
     wiring:
-      "Plug the Light Sensor (LDR) into an ANALOG pin (e.g. A0) because it gives a value from 0 (dark) to 1023 (bright). Plug the Motion Sensor (PIR) into a digital pin like D2 — it only outputs HIGH or LOW. Wire the LED to a digital output pin like D9.",
-    code: "Read both sensors, then: IF light value < 300 (dark) AND motion == HIGH (someone there) → turn LED ON. Otherwise → turn LED OFF.",
-    why: "Analog pins are used for sensors that give a range of values (light level). Digital pins are used for ON/OFF devices like PIR and LEDs. Combining two conditions saves energy — lights only turn on when really needed.",
+      "Plug the Light Sensor (LDR) into an ANALOG pin (e.g. A0) because it gives a value from 0 (dark) to 1023 (bright). Wire the LED street lamp to a digital output pin like D9, with a small resistor in series to protect it.",
+    code: "Read the light sensor value. IF light value < 300 (it's dark outside) → turn the LED ON. ELSE → turn the LED OFF.",
+    why: "A light sensor alone is enough: a street light only needs to know if it's day or night. We don't add a motion sensor here because public street lamps should stay on all night so roads are safe — not only when someone walks by. Analog pins are used for sensors that give a range of values (light level), while digital pins drive ON/OFF devices like the LED.",
   },
   "water-monitor": {
     wiring:
