@@ -46,9 +46,9 @@ export const missionGuides: Record<string, MissionGuide> = {
   },
   "smart-parking": {
     wiring:
-      "Motion Sensor → digital pin D2 (it's ON/OFF when a car is above it). LED Light → D9, Display → D10.",
-    code: "IF motion detected → LED RED (spot taken). ELSE → LED GREEN (free). Show the count of free spots on the Display.",
-    why: "Drivers only need to know 'free or taken', so a digital sensor is enough. Color-coded LEDs are faster to understand than text from far away.",
+      "Place the Motion Sensor at the gate entrance and wire its OUT pin to digital pin D2 (it's ON when a car is in front of it, OFF when the lane is empty). Wire the Servo Motor (the barrier arm) to digital PWM pin D9 — servos need a PWM pin so the Arduino can send the precise angle (0° = closed, 90° = open). Give the servo its own 5V power and connect all grounds together.",
+    code: "Read the Motion Sensor. IF a car is detected → move the servo to 90° (barrier UP). Wait a few seconds for the car to drive in, then check the sensor again — IF the lane is clear → move the servo back to 0° (barrier DOWN). Repeat forever.",
+    why: "A motion sensor is enough to know 'is there a car waiting?' — we don't need a camera for that. A servo motor is used instead of a normal motor because it can hold a precise angle (so the barrier stays exactly horizontal when open and exactly vertical when closed). Closing the barrier after the car passes prevents a second car from sneaking in without paying, which is how real parking gates work.",
   },
   "smart-garden": {
     wiring:

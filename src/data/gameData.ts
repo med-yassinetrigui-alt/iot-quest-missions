@@ -127,12 +127,12 @@ export const missions: Mission[] = [
     unlocked: true,
     completed: false,
     hints: [
-      "Use ultrasonic sensors to detect if a spot is occupied",
-      "Count available spots and display the number",
-      "Guide drivers with LED indicators (green = free, red = taken)",
+      "Use a Motion Sensor at the entry to detect when a car arrives",
+      "Use a Servo Motor to lift the barrier arm up and bring it back down",
+      "Open the barrier when a car is detected, then close it after the car enters",
     ],
     requiredSensors: ["Motion Sensor"],
-    requiredActuators: ["LED Light", "Display"],
+    requiredActuators: ["Motor"],
   },
   {
     id: "smart-garden",
