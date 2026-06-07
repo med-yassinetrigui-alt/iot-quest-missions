@@ -18,7 +18,7 @@ export const missions: Mission[] = [
       "Use an IF→THEN rule: if it's dark, turn the LED ON",
     ],
     requiredSensors: ["Light Sensor"],
-    requiredActuators: ["LED Light"],
+    requiredActuators: ["Light"],
   },
   {
     id: "water-monitor",
