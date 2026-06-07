@@ -14,10 +14,10 @@ export const missions: Mission[] = [
     completed: false,
     hints: [
       "You'll need a light sensor to detect darkness",
-      "A motion sensor can detect if people are nearby",
-      "Use an IF→THEN rule to control the lights",
+      "Read the light value from an analog pin",
+      "Use an IF→THEN rule: if it's dark, turn the LED ON",
     ],
-    requiredSensors: ["Light Sensor", "Motion Sensor"],
+    requiredSensors: ["Light Sensor"],
     requiredActuators: ["LED Light"],
   },
   {
