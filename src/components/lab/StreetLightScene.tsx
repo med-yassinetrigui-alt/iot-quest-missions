@@ -102,29 +102,29 @@ export default function StreetLightScene({
 
         {/* Street lamp */}
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2">
-          {/* Light glow */}
+          {/* Light glow (warm white street-light cone) */}
           {lampOn && (
             <motion.div
-              className="absolute -top-2 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full pointer-events-none"
+              className="absolute -top-2 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full pointer-events-none"
               style={{
                 background:
-                  "radial-gradient(circle, hsl(45 100% 70% / 0.55) 0%, hsl(45 100% 60% / 0.2) 40%, transparent 70%)",
+                  "radial-gradient(circle, hsl(48 100% 92% / 0.75) 0%, hsl(48 95% 80% / 0.35) 40%, transparent 70%)",
               }}
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4 }}
             />
           )}
-          {/* Lamp arm */}
+          {/* Lamp pole + arm */}
           <div className="relative">
             <div className="w-1 h-32 bg-foreground mx-auto" />
             <div className="absolute top-0 left-1/2 w-10 h-1 bg-foreground -translate-x-1/2" />
-            {/* Lamp head */}
+            {/* Lamp head — normal warm-white street lamp */}
             <div
               className={`absolute -top-1 left-1/2 -translate-x-[150%] w-8 h-5 rounded-b-lg border-2 border-foreground transition-all duration-300 ${
                 lampOn
-                  ? "bg-yellow-300 shadow-[0_0_20px_8px_rgba(253,224,71,0.7)]"
-                  : "bg-muted-foreground/40"
+                  ? "bg-[hsl(48,100%,88%)] shadow-[0_0_22px_10px_hsl(48,100%,82%,0.8)]"
+                  : "bg-muted"
               }`}
             />
           </div>
@@ -137,7 +137,7 @@ export default function StreetLightScene({
           </span>
           <span
             className={`px-2 py-1 rounded ${
-              isWired ? "bg-secondary/30 text-secondary" : "bg-destructive/30 text-destructive"
+              isWired ? "bg-secondary/30 text-secondary" : "bg-muted text-muted-foreground"
             }`}
           >
             🔌 {isWired ? "Wired" : "Not wired"}
