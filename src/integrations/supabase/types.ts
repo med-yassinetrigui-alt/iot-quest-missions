@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      mission_completions: {
+        Row: {
+          completed_at: string
+          id: string
+          mission_id: string
+          session_id: string
+          xp: number
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          mission_id: string
+          session_id: string
+          xp?: number
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          mission_id?: string
+          session_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
+      sensor_readings: {
+        Row: {
+          id: string
+          mission_id: string
+          recorded_at: string
+          sensor: string
+          session_id: string
+          value: number
+        }
+        Insert: {
+          id?: string
+          mission_id: string
+          recorded_at?: string
+          sensor: string
+          session_id: string
+          value: number
+        }
+        Update: {
+          id?: string
+          mission_id?: string
+          recorded_at?: string
+          sensor?: string
+          session_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
