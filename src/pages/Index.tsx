@@ -48,7 +48,7 @@ const Index = () => {
   const activeMissions = getUnlockedMissions();
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden">
       {/* Scrollable City Map */}
       <motion.div
         ref={mapRef}
