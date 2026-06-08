@@ -112,8 +112,8 @@ export default function CodeBlocks({ placedBlocks, board }: CodeBlocksProps) {
             >
               <CodeLine color="game-yellow" indent={1}>
                 {board === "raspberry"
-                  ? `if value_0 > threshold:  # 🔀 IF → THEN`
-                  : `if (val0 > THRESHOLD) {  // 🔀 IF → THEN`}
+                  ? `if value_0 > threshold_of_${sensors[0].block.name.toLowerCase().replace(/\s/g, "_")}:  # 🔀 IF → THEN`
+                  : `if (val0 > THRESHOLD_OF_${sensors[0].block.name.replace(/\s/g, "_").toUpperCase()}) {  // 🔀 IF → THEN`}
               </CodeLine>
               {actuators.map((a, i) => (
                 <CodeLine key={`activate-${i}`} color="accent" indent={2}>
