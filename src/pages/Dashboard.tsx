@@ -4,33 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getSessionId } from "@/lib/session";
 import { useGameState } from "@/hooks/useGameState";
 import { missions, badges } from "@/data/gameData";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
-} from "recharts";
-
-type Reading = {
-  id: string;
-  mission_id: string;
-  sensor: string;
-  value: number;
-  recorded_at: string;
-};
-
-const COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--accent))",
-  "hsl(var(--secondary))",
-  "hsl(var(--game-purple))",
-  "hsl(var(--game-yellow))",
-  "hsl(var(--destructive))",
-];
+import { labDashboards } from "@/data/labDashboards";
+import LabDashboardCard, { Reading } from "@/components/dashboard/LabDashboardCard";
 
 export default function Dashboard() {
   const { state } = useGameState();
@@ -46,7 +21,7 @@ export default function Dashboard() {
         .select("id, mission_id, sensor, value, recorded_at")
         .eq("session_id", sessionId)
         .order("recorded_at", { ascending: true })
-        .limit(500);
+        .limit(2000);
       setReadings((data ?? []) as Reading[]);
       setLoading(false);
     };
@@ -68,7 +43,14 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Derive alerts: red if mission not completed, green if completed
+  const byMission = useMemo(() => {
+    const map: Record<string, Reading[]> = {};
+    for (const r of readings) {
+      (map[r.mission_id] ??= []).push(r);
+    }
+    return map;
+  }, [readings]);
+
   const alerts = useMemo(() => {
     return missions.map((m) => {
       const solved = state.completedMissions.includes(m.id);
@@ -76,42 +58,11 @@ export default function Dashboard() {
         id: m.id,
         title: m.title,
         icon: m.icon,
-        category: m.category,
-        severity: solved ? "ok" : (m.difficulty === "hard" ? "critical" : "warning"),
+        severity: solved ? "ok" : m.difficulty === "hard" ? "critical" : "warning",
         solved,
       };
     });
   }, [state.completedMissions]);
-
-  // Aggregate latest readings per mission for the chart
-  const chartData = useMemo(() => {
-    const byMission: Record<string, Record<string, number>> = {};
-    const timeIndex: Record<string, number> = {};
-    const sorted = [...readings].sort(
-      (a, b) => +new Date(a.recorded_at) - +new Date(b.recorded_at)
-    );
-    sorted.forEach((r) => {
-      const t = new Date(r.recorded_at).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
-      if (!byMission[t]) byMission[t] = {};
-      const key = `${r.sensor}`;
-      byMission[t][key] = r.value;
-      timeIndex[t] = +new Date(r.recorded_at);
-    });
-    return Object.entries(byMission)
-      .map(([time, vals]) => ({ time, ...vals }))
-      .sort((a, b) => timeIndex[a.time] - timeIndex[b.time])
-      .slice(-30);
-  }, [readings]);
-
-  const sensorKeys = useMemo(() => {
-    const set = new Set<string>();
-    readings.forEach((r) => set.add(r.sensor));
-    return Array.from(set);
-  }, [readings]);
 
   const activeAlerts = alerts.filter((a) => !a.solved).length;
   const resolved = alerts.filter((a) => a.solved).length;
@@ -127,7 +78,7 @@ export default function Dashboard() {
           🛰️ Smart City Control Center
         </h1>
         <p className="text-muted-foreground font-body mt-1">
-          Live data, problem alerts and your progress — all in one place.
+          One live dashboard per lab — track sensors, actuators and alerts in real time.
         </p>
       </motion.header>
 
@@ -136,7 +87,7 @@ export default function Dashboard() {
         <StatCard label="Level" value={state.level} icon="🚀" tone="primary" />
         <StatCard label="Total XP" value={state.totalXP} icon="⭐" tone="accent" />
         <StatCard
-          label="Missions solved"
+          label="Labs online"
           value={`${resolved}/${missions.length}`}
           icon="✅"
           tone="secondary"
@@ -149,73 +100,38 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* Per-lab dashboards */}
+      <section className="mb-6">
+        <h2 className="font-display text-2xl font-extrabold text-foreground mb-3">
+          🧪 Lab dashboards
+        </h2>
+        {loading ? (
+          <p className="text-muted-foreground text-sm">Loading live data…</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {labDashboards.map((dash) => (
+              <LabDashboardCard
+                key={dash.missionId}
+                dash={dash}
+                readings={byMission[dash.missionId] ?? []}
+                solved={state.completedMissions.includes(dash.missionId)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Alerts + Badges row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Live sensor chart */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="lg:col-span-2 bg-card rounded-2xl p-4 md:p-6 shadow-lg border border-border"
         >
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-xl font-bold text-foreground">
-              📊 Live sensor data
-            </h2>
-            <span className="text-xs font-bold bg-muted px-2 py-1 rounded-full text-muted-foreground">
-              {readings.length} readings
-            </span>
-          </div>
-          {loading ? (
-            <p className="text-muted-foreground text-sm">Loading…</p>
-          ) : chartData.length === 0 ? (
-            <div className="h-64 flex flex-col items-center justify-center text-center text-muted-foreground">
-              <span className="text-5xl mb-2">📡</span>
-              <p className="font-body">
-                No data yet — complete a mission in the lab to start streaming readings here!
-              </p>
-            </div>
-          ) : (
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis dataKey="time" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 12,
-                    }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  {sensorKeys.map((k, i) => (
-                    <Line
-                      key={k}
-                      type="monotone"
-                      dataKey={k}
-                      stroke={COLORS[i % COLORS.length]}
-                      strokeWidth={2}
-                      dot={false}
-                      isAnimationActive={false}
-                    />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Alerts panel */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-card rounded-2xl p-4 md:p-6 shadow-lg border border-border"
-        >
           <h2 className="font-display text-xl font-bold text-foreground mb-3">
             🚨 City problems
           </h2>
-          <ul className="space-y-2 max-h-[28rem] overflow-y-auto pr-1">
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[26rem] overflow-y-auto pr-1">
             {alerts.map((a) => (
               <li
                 key={a.id}
@@ -240,7 +156,6 @@ export default function Dashboard() {
                   <p className="font-display font-bold text-foreground text-sm truncate">
                     {a.title}
                   </p>
-                  <p className="text-xs text-muted-foreground">{a.category}</p>
                 </div>
                 <span
                   className="text-xs font-bold px-2 py-1 rounded-full"
@@ -254,24 +169,27 @@ export default function Dashboard() {
                     color: "hsl(var(--primary-foreground))",
                   }}
                 >
-                  {a.severity === "ok" ? "✅ Solved" : a.severity === "critical" ? "🔴 Critical" : "🟡 Open"}
+                  {a.severity === "ok"
+                    ? "✅ Solved"
+                    : a.severity === "critical"
+                    ? "🔴 Critical"
+                    : "🟡 Open"}
                 </span>
               </li>
             ))}
           </ul>
         </motion.div>
 
-        {/* Badges progress */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="lg:col-span-3 bg-card rounded-2xl p-4 md:p-6 shadow-lg border border-border"
+          transition={{ delay: 0.1 }}
+          className="bg-card rounded-2xl p-4 md:p-6 shadow-lg border border-border"
         >
           <h2 className="font-display text-xl font-bold text-foreground mb-3">
             🏆 Badges ({state.earnedBadges.length}/{badges.length})
           </h2>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {badges.map((b) => {
               const earned = state.earnedBadges.includes(b.id);
               return (
