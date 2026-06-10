@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Map } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSessionId } from "@/lib/session";
 import { useGameState } from "@/hooks/useGameState";
@@ -7,10 +9,13 @@ import { missions, badges } from "@/data/gameData";
 import { labDashboards } from "@/data/labDashboards";
 import LabDashboardCard, { Reading } from "@/components/dashboard/LabDashboardCard";
 
+
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { state } = useGameState();
   const [readings, setReadings] = useState<Reading[]>([]);
   const [loading, setLoading] = useState(true);
+
 
   // Load + live-refresh readings
   useEffect(() => {
@@ -72,15 +77,25 @@ export default function Dashboard() {
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="mb-6"
+        className="mb-6 flex items-start justify-between gap-4"
       >
-        <h1 className="font-display text-3xl md:text-4xl font-extrabold text-foreground">
-          🛰️ Smart City Control Center
-        </h1>
-        <p className="text-muted-foreground font-body mt-1">
-          One live dashboard per lab — track sensors, actuators and alerts in real time.
-        </p>
+        <div>
+          <h1 className="font-display text-3xl md:text-4xl font-extrabold text-foreground">
+            🛰️ Smart City Control Center
+          </h1>
+          <p className="text-muted-foreground font-body mt-1">
+            One live dashboard per lab — track sensors, actuators and alerts in real time.
+          </p>
+        </div>
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2 bg-card border-2 border-border hover:border-primary/40 rounded-xl px-3 py-2 text-sm font-display font-bold text-foreground shadow transition-colors shrink-0"
+        >
+          <Map className="h-4 w-4" />
+          City Map
+        </button>
       </motion.header>
+
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">

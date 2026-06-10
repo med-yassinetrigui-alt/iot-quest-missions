@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { LayoutDashboard } from "lucide-react";
 import { GameState } from "@/types/game";
 import { badges } from "@/data/gameData";
 
@@ -8,6 +10,7 @@ interface TopBarProps {
 }
 
 export default function TopBar({ gameState, onBadgesClick }: TopBarProps) {
+  const navigate = useNavigate();
   const xpToNext = 300 - (gameState.totalXP % 300);
   const xpProgress = ((gameState.totalXP % 300) / 300) * 100;
 
@@ -29,6 +32,15 @@ export default function TopBar({ gameState, onBadgesClick }: TopBarProps) {
 
       {/* Stats */}
       <div className="flex items-center gap-6">
+        {/* Dashboard button */}
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="flex items-center gap-2 text-primary-foreground hover:scale-105 transition-transform bg-primary/20 px-3 py-1.5 rounded-xl border border-primary/30"
+        >
+          <LayoutDashboard className="h-4 w-4" />
+          <span className="font-display font-bold text-sm">Dashboard</span>
+        </button>
+
         {/* Level */}
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center font-display font-extrabold text-accent-foreground text-lg">
