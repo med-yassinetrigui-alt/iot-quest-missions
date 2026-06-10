@@ -425,7 +425,7 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
               {labTab === "code" && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <ArduinoBoard connections={connections} onRemoveConnection={removeConnection} />
-                  <DragDropCodeEditor connections={connections} onValidationChange={setCodeValid} />
+                  <DragDropCodeEditor connections={connections} missionId={mission.id} onValidationChange={setCodeValid} />
                 </div>
               )}
 
