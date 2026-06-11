@@ -201,6 +201,23 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                 </div>
               </div>
 
+              {/* Story intro from BIT the robot guide */}
+              {guide?.story && (
+                <div className="flex items-start gap-3 bg-gradient-to-r from-accent/15 to-primary/15 border-2 border-accent/40 rounded-2xl p-4">
+                  <motion.span
+                    className="text-4xl flex-shrink-0"
+                    animate={{ rotate: [-5, 5, -5] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    🤖
+                  </motion.span>
+                  <div>
+                    <p className="font-display text-sm font-bold text-accent mb-1">BIT says…</p>
+                    <p className="font-body text-foreground/90 leading-relaxed text-sm">{guide.story}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Tutor guide — what to do & WHY */}
               {guide && (
                 <div className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 rounded-2xl p-5 space-y-3">
