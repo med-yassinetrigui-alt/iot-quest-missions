@@ -9,11 +9,14 @@ import MissionModal from "@/components/MissionModal";
 import TopBar from "@/components/TopBar";
 import AIGuide from "@/components/AIGuide";
 import BadgesModal from "@/components/BadgesModal";
+import WelcomeScreen from "@/components/WelcomeScreen";
+import { AnimatePresence } from "framer-motion";
 
 const Index = () => {
   const { state: gameState, completeMission, earnBadge } = useGameState();
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [showBadges, setShowBadges] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [guideMsg, setGuideMsg] = useState<string | undefined>();
   const mapRef = useRef<HTMLDivElement>(null);
 
@@ -97,6 +100,18 @@ const Index = () => {
       {showBadges && (
         <BadgesModal gameState={gameState} onClose={() => setShowBadges(false)} />
       )}
+
+      {/* First-time storytelling welcome */}
+      <AnimatePresence>
+        {showWelcome && (
+          <WelcomeScreen
+            onStart={() => {
+              setShowWelcome(false);
+              setGuideMsg("Pick any glowing mission marker on the map — I'll meet you inside the lab! 🤖");
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
