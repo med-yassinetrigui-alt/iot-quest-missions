@@ -9,6 +9,7 @@ import ComponentTray from "@/components/lab/ComponentTray";
 import DragDropCodeEditor from "@/components/lab/DragDropCodeEditor";
 import StreetLightScene from "@/components/lab/StreetLightScene";
 import SmartParkingScene from "@/components/lab/SmartParkingScene";
+import WiringPrimer from "@/components/lab/WiringPrimer";
 
 interface MissionModalProps {
   mission: Mission;
