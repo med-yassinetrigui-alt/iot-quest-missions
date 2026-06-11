@@ -219,6 +219,9 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                 </div>
               )}
 
+              {/* Cabling & pins primer (analog vs digital, GND, VCC, 5V…) */}
+              <WiringPrimer />
+
               {/* Tutor guide — what to do & WHY */}
               {guide && (
                 <div className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 rounded-2xl p-5 space-y-3">
