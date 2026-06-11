@@ -9,6 +9,7 @@ import ComponentTray from "@/components/lab/ComponentTray";
 import DragDropCodeEditor from "@/components/lab/DragDropCodeEditor";
 import StreetLightScene from "@/components/lab/StreetLightScene";
 import SmartParkingScene from "@/components/lab/SmartParkingScene";
+import WiringPrimer from "@/components/lab/WiringPrimer";
 
 interface MissionModalProps {
   mission: Mission;
@@ -217,6 +218,9 @@ export default function MissionModal({ mission, onClose, onComplete }: MissionMo
                   </div>
                 </div>
               )}
+
+              {/* Cabling & pins primer (analog vs digital, GND, VCC, 5V…) */}
+              <WiringPrimer />
 
               {/* Tutor guide — what to do & WHY */}
               {guide && (
